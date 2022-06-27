@@ -38,7 +38,7 @@ function sendMail($msg,$subject,$mailto,$email_from){
 ?>
 
 <?php
-
+/*
 $sql = "SELECT Code FROM hagztonia WHERE Code=".$_COOKIE['player-code'];
 $res = $conn->query($sql);
 
@@ -51,6 +51,37 @@ if($res->rowCount()>0) ////CODE FOUND IN DATABASE/////
     $hagztoniaflag = 1;
 
 }
+*/
+
+$sql = "SELECT ClassID FROM shamamsastudentsdata WHERE Code=".$_COOKIE['player-code'];
+$res = $conn->query($sql);
+if($res->rowCount()>0) ////CODE FOUND IN DATABASE/////
+{
+    $row = $res->fetch();
+    $classID = $row['ClassID'];
+}
+
+
+
+$sql = "SELECT LevelName, YearInsideLevel, ClassName FROM classinfo WHERE ClassID=".$classID;
+$res = $conn->query($sql);
+if($res->rowCount()>0) ////CODE FOUND IN DATABASE/////
+{
+    $row = $res->fetch();
+    $levelName = $row['LevelName'];
+    $yearInsideLevel = $row['YearInsideLevel'];
+    $className = $row['ClassName'];
+}
+
+$sql = "SELECT CurrentTerm, CurrentYear FROM `currentglobaldata`";
+$res = $conn->query($sql);
+if($res->rowCount()>0)
+{
+    $row = $res->fetch();
+    $currentTerm = $row['CurrentTerm'];
+    $currentYear = $row['CurrentYear'];
+}
+
 
 /*$sql2 = "SELECT Team_ID FROM `Team-Members` WHERE Member_Code=".$_COOKIE['player-code'];
 $res2 = $conn->query($sql2);
@@ -234,30 +265,34 @@ elseif($my_level_id==5){
 <div class="section" style=" display: flex; align-items: center;">
     <div class="container">
         <h2 class="arbaic-text-small-heading" dir="rtl">الكود: <?php echo $_COOKIE['player-code'];?></h2>
-        <!--<h2 class="arbaic-text-small-heading" dir="rtl" style="color: #495057">المرحلة: <?//php echo $playerMarhala;  ?></h2>-->
+        <h2 class="arbaic-text-small-heading" dir="rtl" style="color: #495057">الفصل الحالي: <?php echo $levelName." ".$yearInsideLevel;  ?></h2>
+        <h2 class="arbaic-text-small-heading" dir="rtl" style="color: #495057">المرحلة: <?php echo $className;  ?></h2>
+        <h2 class="arbaic-text-small-heading" dir="rtl" style="color: #9C2079"><?php echo "الترم ".$currentTerm." لعام ".$currentYear;?></h2>
         <br>
         <br>
+        <!--
         <h3 class="arbaic-text-small-nav" style="text-align: center; color:#f5378e; font-size: 35px">*انتهت امتحانات الترم الأول*</h3>
         <h4 class="arbaic-text-small-nav" style="text-align: center; font-size: 25px">تبدأ يوم الجمعة 18 مارس وتنتهي يوم الجمعة 1 أبريل 2020 الساعة 12 ليلاً</h4>
+    -->
     </div>
 </div>
 
+<div class="section" style="display: flex; align-items: center;">
 
 
 <div class="container">
     <div class="row">
-    <!--<div class="col-md-3">
+    <div class="col-md-3">
             <h2  class="arbaic-text-heading" style="text-align: center; color: #f5378e" dir="ltr">نتيجة الترم الأول</h2>
             <a href="natiga.php" class="btn btn-primary3" style="text-decoration:underline;color: #8D26B6; text-align: center;" dir="ltr">الذهاب لنتيجة الترم الأول</a>
-        </div>-->
-        <?php
-        if($hagztoniaflag)
-        echo '
-        <div class="col-md-3">
-            <h2  class="arbaic-text-heading" style="text-align: center; color: #f5378e" dir="ltr">رسامة شمامسة 2022</h2>
-            <a href="estelamtonia.php" class="btn btn-primary3" style="text-decoration:underline;color: #8D26B6; text-align: center;" dir="ltr">حجز معاد لاستلام التونية</a>
-        </div> ';
-        ?>
+    </div>
+
+    <div class="col-md-3">
+            <h2  class="arbaic-text-heading" style="text-align: center; color: #f5378e" dir="ltr">اعلان نتيجة الترم الأول للطلاب</h2>
+            <a href="ezharnatigaterm.php" class="btn btn-primary3" style="text-decoration:underline;color: #8D26B6; text-align: center;" dir="ltr">اعلان نتيجة الترم الأول للطلاب</a>
+    </div>
+
+    </div>
         <!--
         <div class="col-md-3">
             <h2  class="arbaic-text-heading" style="text-align: center; color: #f5378e" dir="ltr">امتحان الطقس</h2>

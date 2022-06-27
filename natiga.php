@@ -9,6 +9,7 @@ if(!isset($_COOKIE['player-code']))
 
 
 
+
 $termNumber = 1;
 $year = 2022;
 
@@ -70,11 +71,13 @@ if($res->rowCount()>0) ////CODE FOUND IN DATABASE/////
 }
 
 $hymnsGradesArray = array();
+$hymnsIDsArray = array();
 $i = 0;
-$sql = "SELECT Grade FROM alhanresults WHERE Class=".$classID." And Code = ".$_COOKIE['player-code'];
+$sql = "SELECT Hymn_ID, Grade FROM alhanresults WHERE Class=".$classID." And Code = ".$_COOKIE['player-code'];
 $res = $conn->query($sql);
 foreach($res->fetchAll() as $row)
 {
+    $hymnsIDsArray[$i] = $row['Hymn_ID'];
     $hymnsGradesArray[$i] = $row['Grade'];
     $i++;
 }
@@ -82,7 +85,7 @@ foreach($res->fetchAll() as $row)
 $totalHymnsGrade = 0;
 for($j=0;$j<$i;$j++)
 {
-    $totalHymnsGrade += $hymnsGradesArray[$j];
+    $totalHymnsGrade += $hymnsGradesArray[$j]; //summation of itmes in hymnsGradesArray
 }
 
 $agbiaGrade = 0;
@@ -115,81 +118,24 @@ if($res->rowCount()>0) ////CODE FOUND IN DATABASE/////
 $studentTermTotalScore = $totalHymnsGrade + $agbiaGrade + $copticGrade + $taksGrade;
 $maxTotalScore = $numberOfHymnsInsideExam*$maxGradeOfEachHymn + $maxGradeOfAgbiaExam + $maxGradeOfCopticExam + $maxGradeOfTaksExam;
 
-}
-
 if($studentTermTotalScore>$maxTotalScore)
 {
     $studentTermTotalScore = $maxTotalScore;
 }
+
+
+$sql = "SET NAMES 'utf8'";
+$sql = $sql . ';' . 'SET CHARACTER SET utf8';
+$sql = $sql . ';' . "INSERT INTO `finalgrades`(`Code`, `ClassID`, `TermNumber`, `TermMaxGrade`, `StudentTermFinalGrade`, `Year`) VALUES (?,?,?,?,?,?)";
+$stmtinsert = $conn->prepare($sql);
+$result = $stmtinsert->execute([$_COOKIE['player-code'],$classID,$termNumber, $maxTotalScore, $studentTermTotalScore,$year]);
+
+$stmtinsert->closeCursor();
+
+}
+
+
 ?>
-
-<?php
-
-/*$sql = "SELECT FirstName FROM shamamsastudentsdata WHERE Code=".$_COOKIE['player-code'];
-$res = $conn->query($sql);
-
-if($res->rowCount()>0) ////CODE FOUND IN DATABASE/////
-{
-    $row = $res->fetch();
-    $playerFullName = $row['FirstName'];
-
-}*/
-
-/*$sql2 = "SELECT Team_ID FROM `Team-Members` WHERE Member_Code=".$_COOKIE['player-code'];
-$res2 = $conn->query($sql2);
-$my_team_code=0;
-if($res2->rowCount()>0) ////CODE FOUND IN DATABASE/////
-{
-    $row2 = $res2->fetch();
-    $my_team_code = $row2['Team_ID'];
-}*/
-
-/*
-$sqlu = "SELECT `Member_Code`  FROM `Team-Members` WHERE `Team_ID`=".$my_team_code;
-$stmt = $conn->prepare($sqlu);
-$stmt->execute();
-$result = $stmt->fetchAll();
-$team_members_array = array();
-$i=0;
-foreach($result as $row) {
-    $team_members_array[$i] = $row['Member_Code'];
-    $i = $i+1;
-}
-*/
-/*
-$sql3 = "SELECT Team_ID, Team_Name FROM `Team` WHERE Team_ID=".$my_team_code;
-$res3 = $conn->query($sql3);
-$my_team_name="";
-$my_team_ID=0;
-if($res3->rowCount()>0) ////CODE FOUND IN DATABASE/////
-{
-    $row3 = $res3->fetch();
-    $my_team_name = $row3['Team_Name'];
-    $my_team_ID = $row3['Team_ID'];
-}
-*/
-/*
-$sql4 = "SELECT `Level_ID` FROM `Player_Level` WHERE Player_Code=".$_COOKIE['player-code'];
-$res4 = $conn->query($sql4);
-$my_level_id=0;
-if($res4->rowCount()>0) ////CODE FOUND IN DATABASE/////
-{
-    $row4 = $res4->fetch();
-    $my_level_id = $row4['Level_ID'];
-}
-$my_level_name="";
-if($my_level_id==1){
-    $my_level_name= $my_level_name . "1";}
-elseif ($my_level_id==2){
-    $my_level_name= $my_level_name . "2";}
-elseif ($my_level_id==3){
-    $my_level_name=$my_level_name ."3";}
-elseif($my_level_id==4){
-    $my_level_name=$my_level_name ."Z";}
-elseif($my_level_id==5){
-    $$my_level_name=$my_level_name ."&";}*/
-?>
-
 
 <!doctype html>
 <html lang="ar" dir="rtl">
@@ -275,15 +221,16 @@ elseif($my_level_id==5){
                             <li class="nav-item arbaic-text-small-nav"> <a class="nav-link" href="#">النتيجة</a> </li>
                              
                             <?php
-                                $sql = "SELECT FirstName, SecondName, ThirdName, Type FROM shamamsastudentsdata WHERE Code=".$_COOKIE['player-code'];
-                                $res = $conn->query($sql);
-                                $res->rowCount(); ////CODE FOUND IN DATABASE/////
-                                $row = $res->fetch();
-                                $playerFirstName = $row['FirstName'];
-                                $playerSecondName = $row['SecondName'];
-                                $playerThirdName = $row['ThirdName'];
-                                $playerFullName = $playerFirstName." ".$playerSecondName." ".$playerThirdName;
-                                echo '<a href="#" class="btn btn-outline-light my-3 my-sm-0 ml-lg-3 arbaic-text-small-nav">'. $playerFirstName .'</a></li>';
+                            $sql = "SELECT 'FirstName', 'SecondName', 'ThirdName', 'Type' FROM shamamsastudentsdata WHERE Code=".$_COOKIE['player-code'];
+                            $res = $conn->query($sql);
+                            $res->rowCount(); ////CODE FOUND IN DATABASE/////
+                            $row = $res->fetch();
+                            $playerFirstName = $row['FirstName'];
+                            $playerSecondName = $row['SecondName'];
+                            $playerThirdName = $row['ThirdName'];
+                            $playerFullName = $playerFirstName." ".$playerSecondName." ".$playerThirdName;
+                            echo '<a href="#" class="btn btn-outline-light my-3 my-sm-0 ml-lg-3 arbaic-text-small-nav">'. $playerFirstName .'</a></li>';
+                                
                             ?>
                         </ul>
                     </div>
@@ -328,10 +275,44 @@ elseif($my_level_id==5){
         <?php
         if($maxTotalScore<1)
         {
-            echo  '<h2 class="arbaic-text-small-heading" dir="rtl" style="color:#171A86;">لقد حصلت على 0 من 0 بنسبة 0%';
+            echo  '<h2 class="arbaic-text-small-heading" dir="rtl" style="color:#DD1148;">لقد حصلت على 0 من 0 بنسبة 0%';
         }
         else{
-          echo  '<h2 class="arbaic-text-small-heading" dir="rtl" style="color:#171A86;">لقد حصلت على '.$studentTermTotalScore.' من '.$maxTotalScore.' بنسبة '.$studentTermTotalScore*100.0/$maxTotalScore.'"%"</h2>';
+          echo  '<h2 class="arbaic-text-small-heading" dir="rtl" style="color:#DD1148;">لقد حصلت على '.$studentTermTotalScore.' من '.$maxTotalScore.' بنسبة '.$studentTermTotalScore*100.0/$maxTotalScore.'"%"</h2>';
+        }
+        ?>
+        <br/>
+        <br/>
+        <h3 class="arbaic-text-small-nav" style="text-align: center; color:#720F81; font-size: 35px">المواد التي يجب إعادتها:</h3>
+        <?php
+        $totalHymnsGrade + $agbiaGrade + $copticGrade + $taksGrade;
+        if($agbiaGrade<0.6*$maxGradeOfAgbiaExam&&$maxGradeOfAgbiaExam>0)
+        {
+            echo  '<h2 class="arbaic-text-small-heading" dir="rtl" style="color:#DD1148;">مادة أجبية ترم '.$termNumber.'</h2>';
+        }
+        if($taksGrade<0.6*$maxGradeOfTaksExam&&$maxGradeOfTaksExam>0)
+        {
+            echo  '<h2 class="arbaic-text-small-heading" dir="rtl" style="color:#DD1148;">مادة طقس ترم '.$termNumber.'</h2>';
+        }
+        if($copticGrade<0.6*$maxGradeOfCopticExam&&$maxGradeOfCopticExam>0)
+        {
+            echo  '<h2 class="arbaic-text-small-heading" dir="rtl" style="color:#DD1148;">مادة قبطي ترم '.$termNumber.'</h2>';
+        }
+        $count = 0;
+        for($i=0;$i<count($hymnsGradesArray);$i++)
+        {
+            if($hymnsGradesArray[$i]<0.6*$maxGradeOfEachHymn)
+            {
+                $sql = "SELECT `Hymn_Name` FROM `alhanquestions` WHERE ClassID =".$classID." AND Hymn_ID = ".$hymnIdsArray[$i];
+                $res = $conn->query($sql);
+                if($res->rowCount()>0) ////CODE FOUND IN DATABASE/////
+                {
+                    $row = $res->fetch();
+                    $Hymn_Name = $row['Hymn_Name'];
+                }
+                echo  '<h2 class="arbaic-text-small-heading" dir="rtl" style="color:#DD1148;">'.$count.'. لحن رقم '.$hymnIdsArray[$i].' | اسم اللحن: '.$Hymn_Name.'</h2>';
+                $count++;
+            }
         }
         ?>
     </div>
